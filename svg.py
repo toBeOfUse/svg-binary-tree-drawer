@@ -4,6 +4,7 @@ from typing import Union
 class SVGElement:
 
     def __init__(self, tagName: str, attrs: dict = {}, children: list = []):
+        """Sets up the basic ingredients of an SVG element."""
         self.tagName = tagName
         self.attrs = attrs
         self.children = children
@@ -27,11 +28,17 @@ class SVGElement:
         } | extraAttrs, initialChildren)
 
     def addChild(self, child):
+        """
+        A child can either be another SVG element or a string representing a text node.
+        """
         self.children.append(child)
 
     def render(self, depth=0) -> str:
-        tab = "    " * depth
-        renderedChildren = "\n".join(c.render(depth + 1) for c in self.children)
+        tabBase = "    "
+        tab = tabBase * depth
+        renderedChildren = "\n".join(
+            (c.render(depth + 1) if not isinstance(c, str) else tabBase *
+             (depth + 1) + c) for c in self.children)
         renderedAttrs = " ".join(k + f'="{v}"' for k, v in self.attrs.items())
         return tab + f"<{self.tagName} " + renderedAttrs + (
             "/>" if len(self.children) == 0 else
@@ -44,6 +51,8 @@ if __name__ == "__main__":
     print(test.render())
     testCont = SVGElement.getDefaultContainer()
     testCont.addChild(test)
+    testText = SVGElement("text", {"x": 0, "y": 70}, ["test text"])
+    testCont.addChild(testText)
     print("circle in container:")
     print(testCont.render())
     with open("test.svg", "w+", encoding="utf-8") as testFile:
