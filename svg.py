@@ -7,7 +7,9 @@ class SVGElement:
         """Sets up the basic ingredients of an SVG element."""
         self.tagName = tagName
         self.attrs = attrs
-        self.children = children
+        self.children = [
+            (x if type(x) is type(self) else str(x)) for x in children
+        ]
 
     def setAttr(self, key: str, value: Union[str, int]):
         """Use this to set attributes on the SVG element like "height" or "fill". Set
@@ -31,13 +33,16 @@ class SVGElement:
         """
         A child can either be another SVG element or a string representing a text node.
         """
-        self.children.append(child)
+        if type(child) is type(self):
+            self.children.append(child)
+        else:
+            self.children.append(str(child))
 
     def render(self, depth=0) -> str:
         tabBase = "    "
         tab = tabBase * depth
         renderedChildren = "\n".join(
-            (c.render(depth + 1) if not isinstance(c, str) else tabBase *
+            (c.render(depth + 1) if type(c) is type(self) else tabBase *
              (depth + 1) + c) for c in self.children)
         renderedAttrs = " ".join(k + f'="{v}"' for k, v in self.attrs.items())
         return tab + f"<{self.tagName} " + renderedAttrs + (
