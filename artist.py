@@ -24,6 +24,7 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree):
     getRowWidthByNodeCount = lambda x: x * NODE_DIAMETER + (
         x - 1) * MIN_NODE_X_SPACING
     finalWidth = getRowWidthByNodeCount(nodesInLastLevel)
+    lowestCenterX = -finalWidth / 2 + NODE_RADIUS
     # SVG viewbox format is "minX minY width height"
     viewBox = (f"{(-finalWidth/2)-HORIZONTAL_MARGIN} " +
                f"{-NODE_RADIUS-VERTICAL_MARGIN} "
@@ -31,24 +32,36 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree):
                f"{finalHeight + VERTICAL_MARGIN*2}")
     svgBase = SVGElement.getDefaultContainer(viewBox)
 
-    for level in range(1, tree.height + 1):
+    prevSpacing = None
+    # we build the tree from the bottom up so that we can space the bottom row of
+    # nodes the minimum distance apart and then space each node in each row above it
+    # halfway between their two child nodes
+    for level in range(tree.height, 0, -1):
         nodes = tree.getNodesByLevel(level)
+        nodes += [None] * (tree.getMaxNodeCountByLevel(level) - len(nodes))
         nodeCenterYs = (level - 1) * NODE_DIAMETER + (level -
                                                       1) * NODE_Y_SPACING
-        rowWidth = getRowWidthByNodeCount(len(nodes))
+        rowWidth = finalWidth - (NODE_DIAMETER * (tree.height - level))
         nodeCentersSpan = rowWidth - NODE_DIAMETER
-        nodeXSpacing = [0] + [
-            nodeCentersSpan * (x / (len(nodes) - 1))
-            for x in range(1,
-                           len(nodes) - 1)
-        ] + [nodeCentersSpan]
-        lowestCenterX = -rowWidth / 2 + NODE_RADIUS
+        if prevSpacing is None:
+            nodeXSpacing = [0] + [
+                nodeCentersSpan * (x / (len(nodes) - 1))
+                for x in range(1,
+                               len(nodes) - 1)
+            ] + [nodeCentersSpan]
+        else:
+            nodeXSpacing = []
+            for i in range(0, len(prevSpacing), 2):
+                nodeXSpacing.append((prevSpacing[i] + prevSpacing[i + 1]) / 2)
+        prevSpacing = nodeXSpacing
         print("row number is", level)
         print("row width is", rowWidth)
         print("node centers span", nodeCentersSpan)
         print("nodes are spaced out by", nodeXSpacing)
         print("lowestCenterX is", lowestCenterX)
         for i in range(len(nodes)):
+            if nodes[i] is None:
+                continue
             nodeCenterX = lowestCenterX + nodeXSpacing[i]
             svgBase.addChild(
                 SVGElement(
@@ -66,12 +79,13 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree):
                         "x": nodeCenterX,
                         "y": nodeCenterYs,
                         "font-size": NODE_TEXT_SIZE,
-                        "fill": "black"
+                        "fill": "black",
+                        "text-anchor": "middle"
                     }, [nodes[i]]))
     return svgBase
 
 
 if __name__ == "__main__":
-    testResult = visualizeBinaryTree(ListBasedBinaryTree([1, 2, 3]))
+    testResult = visualizeBinaryTree(ListBasedBinaryTree(list(range(1, 16))))
     with open("test.svg", "w+") as testFile:
         testFile.write(testResult.render())
