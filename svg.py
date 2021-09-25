@@ -29,14 +29,17 @@ class SVGElement:
     def addChild(self, child):
         self.children.append(child)
 
-    def render(self) -> str:
-        return f"<{self.tagName} " + " ".join(
-            k + f'="{v}"' for k, v in self.attrs.items()) + ">" + "\n".join(
-                c.render() for c in self.children) + f"</{self.tagName}>"
+    def render(self, depth=0) -> str:
+        tab = "    " * depth
+        renderedChildren = "\n".join(c.render(depth + 1) for c in self.children)
+        renderedAttrs = " ".join(k + f'="{v}"' for k, v in self.attrs.items())
+        return tab + f"<{self.tagName} " + renderedAttrs + (
+            "/>" if len(self.children) == 0 else
+            (">\n" + renderedChildren + f"\n{tab}</{self.tagName}>"))
 
 
 if __name__ == "__main__":
-    test = SVGElement("circle", {"rx": 45, "ry": 45, "r": 40, "fill": "red"})
+    test = SVGElement("circle", {"cx": 45, "cy": 45, "r": 40, "fill": "red"})
     print("circle:")
     print(test.render())
     testCont = SVGElement.getDefaultContainer()
