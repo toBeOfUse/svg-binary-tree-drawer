@@ -2,6 +2,7 @@ import json
 import tornado.ioloop
 import tornado.web
 from urllib import parse
+import logging
 from cairosvg import svg2png
 from artist import visualizeBinaryTree
 from tree import ListBasedBinaryTree
@@ -21,10 +22,11 @@ class SVGHandler(tornado.web.RequestHandler):
         if len(self.request.body) > 500:
             self.set_status(400, "request too long")
             self.finish()
+            logging.info("denied request for being "+str(len(self.request.body)+" bytes long"))
         else:
             treeData = json.loads(self.request.body)
-            print("got svg request:")
-            print(treeData)
+            logging.info("got svg request:")
+            logging.info(str(treeData))
             svg = treeDataToSVG(treeData)
             dataURL = "data:image/svg+xml," + parse.quote(svg.render())
             self.finish({"width": svg.viewBoxWidth, "url": dataURL})
@@ -36,7 +38,9 @@ class PNGHandler(tornado.web.RequestHandler):
         if len(self.request.body) > 500:
             self.set_status(400)
             self.finish("request too long")
+            logging.info("denied request for being "+str(len(self.request.body)+" bytes long"))
         else:
+            logging.info("rendering png")
             treeData = json.loads(self.request.body)
             svg = treeDataToSVG(treeData)
             png = svg2png(bytestring=svg.render(), output_width=svg.viewBoxWidth*2)
@@ -51,8 +55,11 @@ if __name__ == "__main__":
                                             tornado.web.StaticFileHandler, {
                                                 "path": "./static/",
                                                 "default_filename": "index.html"
-                                            })], 
-                                            compress_response=True)
+                                            })],
+                                          compress_response=True)
     application.listen(8888)
     print("listening on port 8888")
+    logging.basicConfig(
+        filename='requests.log', encoding='utf-8', level=logging.DEBUG,
+        format='%(asctime)s: %(message)s', datefmt='%m/%d/%Y %H:%M:%S')
     tornado.ioloop.IOLoop.current().start()
