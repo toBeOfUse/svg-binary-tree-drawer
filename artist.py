@@ -39,8 +39,7 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree):
     for level in range(tree.height, 0, -1):
         nodes = tree.getNodesByLevel(level)
         nodes += [None] * (tree.getMaxNodeCountByLevel(level) - len(nodes))
-        nodeCenterYs = (level - 1) * NODE_DIAMETER + (level -
-                                                      1) * NODE_Y_SPACING
+        rowCenterY = (level - 1) * NODE_DIAMETER + (level - 1) * NODE_Y_SPACING
         rowWidth = finalWidth - (NODE_DIAMETER * (tree.height - level))
         nodeCentersSpan = rowWidth - NODE_DIAMETER
         if prevSpacing is None:
@@ -54,30 +53,40 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree):
             for i in range(0, len(prevSpacing), 2):
                 nodeXSpacing.append((prevSpacing[i] + prevSpacing[i + 1]) / 2)
         prevSpacing = nodeXSpacing
-        print("row number is", level)
-        print("row width is", rowWidth)
-        print("node centers span", nodeCentersSpan)
-        print("nodes are spaced out by", nodeXSpacing)
-        print("lowestCenterX is", lowestCenterX)
         for i in range(len(nodes)):
             if nodes[i] is None:
                 continue
             nodeCenterX = lowestCenterX + nodeXSpacing[i]
-            svgBase.addChild(
-                SVGElement(
-                    "circle", {
-                        "cx": nodeCenterX,
-                        "cy": nodeCenterYs,
-                        "r": NODE_RADIUS,
-                        "fill": "white",
-                        "stroke": "black",
-                        "stroke-width": NODE_OUTLINE_WIDTH
-                    }))
+            # note that the tree class assumes that node numbers start at 1, whereas
+            # in this loop we are coding with them starting at 0, so we have to add 1
+            if not tree.isNodeExternal(level, i + 1):
+                svgBase.addChild(
+                    SVGElement(
+                        "circle", {
+                            "cx": nodeCenterX,
+                            "cy": rowCenterY,
+                            "r": NODE_RADIUS,
+                            "fill": "white",
+                            "stroke": "black",
+                            "stroke-width": NODE_OUTLINE_WIDTH
+                        }))
+            else:
+                svgBase.addChild(
+                    SVGElement(
+                        "rect", {
+                            "width": NODE_DIAMETER,
+                            "height": NODE_DIAMETER,
+                            "x": nodeCenterX - NODE_RADIUS,
+                            "y": rowCenterY - NODE_RADIUS,
+                            "fill": "white",
+                            "stroke": "black",
+                            "stroke-width": NODE_OUTLINE_WIDTH
+                        }))
             svgBase.addChild(
                 SVGElement(
                     "text", {
                         "x": nodeCenterX,
-                        "y": nodeCenterYs,
+                        "y": rowCenterY,
                         "font-size": NODE_TEXT_SIZE,
                         "fill": "black",
                         "text-anchor": "middle"

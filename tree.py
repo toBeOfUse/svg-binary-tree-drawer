@@ -13,17 +13,49 @@ class ListBasedBinaryTree:
         self.list = listRepresentation
 
     @property
-    def height(self):
+    def height(self) -> int:
         return math.ceil(math.log2(len(self.list)))
 
     @staticmethod
-    def getMaxNodeCountByLevel(level: int):
+    def getMaxNodeCountByLevel(level: int) -> int:
         return 2**(level - 1)
 
-    def getNodesByLevel(self, level: int):
-        start = sum((self.getMaxNodeCountByLevel(i) for i in range(1, level)),
-                    start=0)
+    @classmethod
+    def getLevelStart(cls, level: int) -> int:
+        """Returns the index of the first node that belongs to the given level. Meant
+        to be used to index into self.list"""
+        # can this be turned from log(n) into constant time ??
+        return sum((cls.getMaxNodeCountByLevel(i) for i in range(1, level)),
+                   start=0)
+
+    def getNodesByLevel(self, level: int) -> list:
+        start = self.getLevelStart(level)
         return self.list[start:start + self.getMaxNodeCountByLevel(level)]
+
+    def nodeExists(self, index: int) -> bool:
+        """Checks for node existence by index, where index is used to look into
+        self.list"""
+        return index < len(self.list) and self.list[index] is not None
+
+    def hasLeftChild(self, level: int, number: int) -> bool:
+        """Given the position of a node, returns whether it has a left child or not.
+        Both levels and node numbers are assumed to start at 1."""
+        nodePos = self.getLevelStart(level) + (number - 1)
+        childPos = nodePos * 2 + 1
+        return self.nodeExists(childPos)
+
+    def hasRightChild(self, level: int, number: int) -> bool:
+        """Given the position of a node, returns whether it has a right child or not.
+        Both levels and node numbers are assumed to start at 1."""
+        nodePos = self.getLevelStart(level) + (number - 1)
+        childPos = nodePos * 2 + 2
+        return self.nodeExists(childPos)
+
+    def isNodeExternal(self, level: int, number: int) -> bool:
+        """Given the position of a node, returns whether it has children or not. Both
+        levels and node numbers are assumed to start at 1."""
+        return (not self.hasLeftChild(
+            level, number)) and (not self.hasRightChild(level, number))
 
 
 if __name__ == "__main__":
@@ -43,5 +75,8 @@ if __name__ == "__main__":
     assert test1.getNodesByLevel(2) == [
         2, 3
     ], "level 2 should have the second and third list items in it"
+    assert not test1.isNodeExternal(1, 1), "root node is not external"
+    assert test1.isNodeExternal(2, 1), "external node is external"
+    #TODO: tests for left and right child existence
 
     print("tests passed")
