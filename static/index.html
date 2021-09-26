@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tree Drawer</title>
+    <style>
+      #svgCont {
+        width: 700px;
+        max-width: 100%;
+      }
+      #elements {
+        width: 500px;
+        max-width: 100%;
+      }
+      #elementInput {
+        margin: 10px 0;
+      }
+      #elementInput * {
+        display: block;
+      }
+      #getTree {
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="elementInput">
+      <label for="elements"
+        >Comma-separated element labels in array-representation format:</label
+      >
+      <input type="text" id="elements" />
+      <span
+        >(leave a blank space or nothing between the commas for non-existent
+        nodes)</span
+      >
+    </div>
+    <input type="checkbox" id="squares" />
+    <label for="squares">Add placeholder external nodes</label>
+    <br />
+    <button id="getTree">Get Tree</button>
+    <br />
+    <img id="svgCont" src="" />
+    <script>
+      document.querySelector("#getTree").addEventListener("click", () => {
+        const elements = document
+          .querySelector("#elements")
+          .value.split(",")
+          .map((v) => v.trim());
+        const squares = document.querySelector("#squares").checked;
+        fetch("/svg", {
+          method: "POST",
+          body: JSON.stringify({ elements, squares }),
+        }).then((r) =>
+          r.text().then((t) => {
+            document.querySelector("#svgCont").src = t;
+          })
+        );
+      });
+    </script>
+  </body>
+</html>
