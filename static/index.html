@@ -6,16 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tree Drawer</title>
     <style>
+      * {
+        box-sizing: border-box;
+      }
       html {
         font-family: sans-serif;
       }
       #svgCont {
-        width: 700px;
         max-width: 100%;
+        margin-right: 10px;
       }
       #elements {
         width: 500px;
         max-width: 100%;
+        margin-right: 10px;
       }
       #elementInput {
         margin: 10px 0;
@@ -77,8 +81,9 @@
         };
         lastRequest = request;
         fetch("/svg", request).then((r) =>
-          r.text().then((t) => {
-            document.querySelector("#svgCont").src = t;
+          r.json().then((j) => {
+            document.querySelector("#svgCont").src = j.url;
+            document.querySelector("#svgCont").width = j.width;
             document.querySelector("#svgDownload").disabled = false;
             document.querySelector("#pngDownload").disabled = false;
           })

@@ -1,17 +1,18 @@
 import json
 import tornado.ioloop
 import tornado.web
+from urllib import parse
 from cairosvg import svg2png
 from artist import visualizeBinaryTree
 from tree import ListBasedBinaryTree
 
 
 def treeDataToSVG(treeData: dict):
-    elements = [(x.strip()[:20] if x.strip() != "" else None)
+    elements = [(x.strip()[:10] if x.strip() != "" else None)
                 for x in treeData["elements"]]
     svgResult = visualizeBinaryTree(ListBasedBinaryTree(elements),
                                     treeData["squares"])
-    return svgResult.render()
+    return svgResult
 
 
 class SVGHandler(tornado.web.RequestHandler):
@@ -24,7 +25,9 @@ class SVGHandler(tornado.web.RequestHandler):
             treeData = json.loads(self.request.body)
             print("got svg request:")
             print(treeData)
-            self.finish("data:image/svg+xml;utf8," + treeDataToSVG(treeData))
+            svg = treeDataToSVG(treeData)
+            dataURL = "data:image/svg+xml," + parse.quote(svg.render())
+            self.finish({"width": svg.viewBoxWidth, "url": dataURL})
 
 
 class PNGHandler(tornado.web.RequestHandler):
@@ -36,7 +39,7 @@ class PNGHandler(tornado.web.RequestHandler):
         else:
             treeData = json.loads(self.request.body)
             svg = treeDataToSVG(treeData)
-            png = svg2png(bytestring=svg, output_width=800)
+            png = svg2png(bytestring=svg.render(), output_width=svg.viewBoxWidth*2)
             self.set_header("Content-Type", "image/png")
             self.finish(png)
 

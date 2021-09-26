@@ -42,7 +42,7 @@ class SVGElement:
             self.children.append(str(child))
 
     @property
-    def viewBoxWidth(self):
+    def viewBoxWidth(self) -> Union[int, None]:
         if "viewBox" not in self.attrs:
             return None
         else:
@@ -54,7 +54,7 @@ class SVGElement:
                 return None
 
     @property
-    def viewBoxHeight(self):
+    def viewBoxHeight(self) -> Union[int, None]:
         if "viewBox" not in self.attrs:
             return None
         else:
