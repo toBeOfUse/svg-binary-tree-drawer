@@ -14,7 +14,13 @@ class ListBasedBinaryTree:
 
     @property
     def height(self) -> int:
-        return math.ceil(math.log2(len(self.list)))
+        # can this be turned from log(n) into constant time ??
+        level = 0
+        accumulator = 0
+        while accumulator < len(self.list):
+            accumulator += 2**level
+            level += 1
+        return level
 
     @staticmethod
     def getMaxNodeCountByLevel(level: int) -> int:
@@ -84,8 +90,8 @@ if __name__ == "__main__":
     assert ListBasedBinaryTree.getMaxNodeCountByLevel(
         3) == 4, "trees should have four nodes in their third level"
 
-    test1 = ListBasedBinaryTree([1, 2, 3])
-    assert test1.height == 2, "tree should have a height of 2"
+    test1 = ListBasedBinaryTree([1, 2, 3, 4])
+    assert test1.height == 3, "tree should have a height of 3"
     assert test1.getNodesByLevel(1) == [
         1
     ], "level 1 should have the first list item in it"
@@ -93,7 +99,7 @@ if __name__ == "__main__":
         2, 3
     ], "level 2 should have the second and third list items in it"
     assert not test1.isNodeExternal(1, 1), "root node is not external"
-    assert test1.isNodeExternal(2, 1), "external node is external"
-    #TODO: tests for left and right child existence
+    assert test1.isNodeExternal(3, 1), "external node is external"
+    # TODO: tests for left and right child existence
 
     print("tests passed")
