@@ -56,6 +56,13 @@
     </div>
     <script>
       let lastRequest;
+      document
+        .querySelector("#elements")
+        .addEventListener("keypress", (event) => {
+          if (event.key == "Enter") {
+            document.querySelector("#getTree").click();
+          }
+        });
       document.querySelector("#getTree").addEventListener("click", () => {
         const elements = document
           .querySelector("#elements")
