@@ -24,7 +24,8 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
     nodesInLastLevel = tree.getMaxNodeCountByLevel(numLevels)
     # returns the distance between the left edge of the leftmost circle and the right
     # edge of the rightmost circle
-    getRowWidthByNodeCount = lambda x: x * NODE_DIAMETER + (
+
+    def getRowWidthByNodeCount(x): return x * NODE_DIAMETER + (
         x - 1) * MIN_NODE_X_SPACING
     finalWidth = getRowWidthByNodeCount(nodesInLastLevel)
     lowestCenterX = -finalWidth / 2 + NODE_RADIUS
@@ -137,7 +138,7 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
         prevSpacing = nodeXSpacing
     # sort the SVGElements so that the lines are first and thus are covered up by the shapes and things
     svgBase.children = [x for x in svgBase.children if x.tagName == "line"
-                       ] + [x for x in svgBase.children if x.tagName != "line"]
+                        ] + [x for x in svgBase.children if x.tagName != "line"]
     return svgBase
 
 
