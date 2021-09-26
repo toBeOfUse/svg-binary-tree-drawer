@@ -32,30 +32,47 @@ class ListBasedBinaryTree:
         start = self.getLevelStart(level)
         return self.list[start:start + self.getMaxNodeCountByLevel(level)]
 
-    def nodeExists(self, index: int) -> bool:
+    def nodeExistsByIndex(self, index: int) -> bool:
         """Checks for node existence by index, where index is used to look into
         self.list"""
         return index < len(self.list) and self.list[index] is not None
+
+    def nodeExists(self, level: int, number: int) -> bool:
+        """Checks for node existence by position. Both levels and node numbers are
+        assumed to start at 1."""
+        nodePos = self.getLevelStart(level) + (number - 1)
+        return self.nodeExistsByIndex(nodePos)
 
     def hasLeftChild(self, level: int, number: int) -> bool:
         """Given the position of a node, returns whether it has a left child or not.
         Both levels and node numbers are assumed to start at 1."""
         nodePos = self.getLevelStart(level) + (number - 1)
         childPos = nodePos * 2 + 1
-        return self.nodeExists(childPos)
+        return self.nodeExistsByIndex(childPos)
 
     def hasRightChild(self, level: int, number: int) -> bool:
         """Given the position of a node, returns whether it has a right child or not.
         Both levels and node numbers are assumed to start at 1."""
         nodePos = self.getLevelStart(level) + (number - 1)
         childPos = nodePos * 2 + 2
-        return self.nodeExists(childPos)
+        return self.nodeExistsByIndex(childPos)
 
     def isNodeExternal(self, level: int, number: int) -> bool:
         """Given the position of a node, returns whether it has children or not. Both
         levels and node numbers are assumed to start at 1."""
         return (not self.hasLeftChild(
             level, number)) and (not self.hasRightChild(level, number))
+
+    def hasParent(self, level: int, number: int) -> bool:
+        """Given the position of a node which may or may not exist, returns whether
+        it would have a parent if it did/does exist. Both levels and node numbers are
+        assumed to start at 1."""
+        nodePos = self.getLevelStart(level) + (number - 1)
+        if nodePos < 1:
+            return False
+        else:
+            parentPos = int((nodePos - 1) / 2)
+            return self.nodeExistsByIndex(parentPos)
 
 
 if __name__ == "__main__":

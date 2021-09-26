@@ -12,13 +12,16 @@ VERTICAL_MARGIN = 10
 HORIZONTAL_MARGIN = 10
 
 
-def visualizeBinaryTree(tree: ListBasedBinaryTree):
+def visualizeBinaryTree(tree: ListBasedBinaryTree,
+                        addBlankExternalNodes: bool = False):
     """Produces an SVG that visualizes the tree. For simplicity, the root node is
     placed at the origin of the SVG's coordinate system and the viewBox is built
-    around that."""
-    finalHeight = tree.height * NODE_DIAMETER + (tree.height -
-                                                 1) * NODE_Y_SPACING
-    nodesInLastLevel = tree.getMaxNodeCountByLevel(tree.height)
+    around that. If addBlankExternalNodes is True, then no existing nodes will be
+    drawn external, but each of them will be given a placeholder external left and
+    right child, if necessary."""
+    numLevels = tree.height if not addBlankExternalNodes else tree.height + 1
+    finalHeight = numLevels * NODE_DIAMETER + (numLevels - 1) * NODE_Y_SPACING
+    nodesInLastLevel = tree.getMaxNodeCountByLevel(numLevels)
     # returns the distance between the left edge of the leftmost circle and the right
     # edge of the rightmost circle
     getRowWidthByNodeCount = lambda x: x * NODE_DIAMETER + (
@@ -36,12 +39,14 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree):
     prevYCenter = None
     # we build the tree from the bottom up so that we can space the bottom row of
     # nodes the minimum distance apart and then space each node in each row above it
-    # halfway between their two child nodes
-    for level in range(tree.height, 0, -1):
+    # halfway between their two child nodes.
+    # if we are adding blank external nodes, we need an extra level (which will be
+    # filled with Nones)
+    for level in range(numLevels, 0, -1):
         nodes = tree.getNodesByLevel(level)
         nodes += [None] * (tree.getMaxNodeCountByLevel(level) - len(nodes))
         rowCenterY = (level - 1) * NODE_DIAMETER + (level - 1) * NODE_Y_SPACING
-        rowWidth = finalWidth - (NODE_DIAMETER * (tree.height - level))
+        rowWidth = finalWidth - (NODE_DIAMETER * (numLevels - level))
         nodeCentersSpan = rowWidth - NODE_DIAMETER
         if prevSpacing is None:
             nodeXSpacing = [0] + [
@@ -55,11 +60,19 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree):
                 nodeXSpacing.append((prevSpacing[i] + prevSpacing[i + 1]) / 2)
         for i in range(len(nodes)):
             if nodes[i] is None:
-                continue
+                if not addBlankExternalNodes or not tree.hasParent(
+                        level, i + 1):
+                    continue
+
+            nodeIsExternal = tree.isNodeExternal(level, i + 1)
+            if addBlankExternalNodes:
+                squareMode = nodes[i] is None
+            else:
+                squareMode = nodeIsExternal
             nodeCenterX = lowestCenterX + nodeXSpacing[i]
             # note that the tree class assumes that node numbers start at 1, whereas
             # in this loop we are coding with them starting at 0, so we have to add 1
-            if not tree.isNodeExternal(level, i + 1):
+            if not squareMode:
                 svgBase.addChild(
                     SVGElement(
                         "circle", {
@@ -82,17 +95,18 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree):
                             "stroke": "black",
                             "stroke-width": NODE_OUTLINE_WIDTH
                         }))
-            svgBase.addChild(
-                SVGElement(
-                    "text", {
-                        "x": nodeCenterX,
-                        "y": rowCenterY,
-                        "font-size": NODE_TEXT_SIZE,
-                        "fill": "black",
-                        "text-anchor": "middle"
-                    }, [nodes[i]]))
-            if level != tree.height:
-                if tree.hasLeftChild(level, i + 1):
+            if nodes[i] is not None:
+                svgBase.addChild(
+                    SVGElement(
+                        "text", {
+                            "x": nodeCenterX,
+                            "y": rowCenterY,
+                            "font-size": NODE_TEXT_SIZE,
+                            "fill": "black",
+                            "text-anchor": "middle"
+                        }, [nodes[i]]))
+            if level != numLevels and tree.nodeExists(level, i + 1):
+                if tree.hasLeftChild(level, i + 1) or addBlankExternalNodes:
                     leftChildXPos = lowestCenterX + prevSpacing[i * 2]
                     svgBase.addChild(
                         SVGElement(
@@ -104,7 +118,7 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree):
                                 "stroke": "black",
                                 "stroke-width": NODE_OUTLINE_WIDTH
                             }))
-                if tree.hasRightChild(level, i + 1):
+                if tree.hasRightChild(level, i + 1) or addBlankExternalNodes:
                     rightChildXPos = lowestCenterX + prevSpacing[i * 2 + 1]
                     svgBase.addChild(
                         SVGElement(
@@ -126,6 +140,7 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree):
 
 
 if __name__ == "__main__":
-    testResult = visualizeBinaryTree(ListBasedBinaryTree(list(range(1, 16))))
+    testResult = visualizeBinaryTree(ListBasedBinaryTree(list(range(1, 7))),
+                                     True)
     with open("test.svg", "w+") as testFile:
         testFile.write(testResult.render())
