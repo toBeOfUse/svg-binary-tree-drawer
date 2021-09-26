@@ -31,6 +31,9 @@
         display: inline;
         margin-right: 5px;
       }
+      .outputButton {
+        margin-top: 10px;
+      }
       #getTree {
         margin: 10px 0;
       }
@@ -55,8 +58,15 @@
     <br />
     <img id="svgCont" src="" />
     <div id="buttonsCont">
-      <button disabled id="svgDownload">Download as .svg</button>
-      <button disabled id="pngDownload">Download as .png</button>
+      <button disabled class="outputButton" id="svgDownload">
+        Download as .svg
+      </button>
+      <button disabled class="outputButton" id="pngDownload">
+        Download as .png
+      </button>
+      <button disabled class="outputButton" id="pngNewTab">
+        Open .png in new tab for copying
+      </button>
     </div>
     <div style="display: block; margin-top: 50px">
       <a
@@ -68,8 +78,9 @@
     <script>
       const sel = (query) => document.querySelector(query);
       const selAll = (query) => Array.from(document.querySelectorAll(query));
-      sel("#svgDownload").disabled = true;
-      sel("#pngDownload").disabled = true;
+      selAll(".outputButton").forEach((v) => {
+        v.disabled = true;
+      });
       let lastRequest;
       sel("#elements").addEventListener("keypress", (event) => {
         if (event.key == "Enter") {
@@ -83,15 +94,16 @@
         const squares = sel("#squares").checked;
         const request = {
           method: "POST",
-          body: JSON.stringify({ elements, squares }),
+          body: JSON.stringify({ elements, squares, bg: false }),
         };
         lastRequest = request;
         fetch("/svg", request).then((r) =>
           r.json().then((j) => {
             sel("#svgCont").src = j.url;
             sel("#svgCont").width = j.width;
-            sel("#svgDownload").disabled = false;
-            sel("#pngDownload").disabled = false;
+            selAll(".outputButton").forEach((v) => {
+              v.disabled = false;
+            });
           })
         );
       });
@@ -112,6 +124,16 @@
         fetch("/png", lastRequest).then((r) =>
           r.blob().then((b) => {
             download(URL.createObjectURL(b), "png");
+          })
+        );
+      });
+      sel("#pngNewTab").addEventListener("click", () => {
+        fetch("/png", {
+          method: lastRequest.method,
+          body: JSON.stringify({ ...JSON.parse(lastRequest.body), bg: true }), // sigh
+        }).then((r) =>
+          r.blob().then((b) => {
+            window.open(URL.createObjectURL(b), "_blank").focus();
           })
         );
       });
