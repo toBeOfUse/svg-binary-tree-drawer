@@ -26,7 +26,8 @@ class ElementsHandler(tornado.web.RequestHandler):
             return None
         if "elements" not in treeData or type(
                 treeData["elements"]) is not list or "squares" not in treeData or type(
-                treeData["squares"]) is not bool:
+                treeData["squares"]) is not bool or "bg" not in treeData or type(
+                treeData["bg"]) is not bool:
             self.set_status(400, "malformed request")
             self.finish()
             logging.debug("denied request for having malformed input: "+str(treeData))
@@ -34,7 +35,7 @@ class ElementsHandler(tornado.web.RequestHandler):
         elements = [(x.strip()[:10] if x.strip() != "" else None)
                     for x in treeData["elements"]]
         svgResult = visualizeBinaryTree(ListBasedBinaryTree(elements),
-                                        treeData["squares"])
+                                        treeData["squares"], treeData["bg"])
         logging.info("processed request for tree: "+str(treeData))
         return svgResult
 
