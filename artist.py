@@ -33,6 +33,7 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree):
     svgBase = SVGElement.getDefaultContainer(viewBox)
 
     prevSpacing = None
+    prevYCenter = None
     # we build the tree from the bottom up so that we can space the bottom row of
     # nodes the minimum distance apart and then space each node in each row above it
     # halfway between their two child nodes
@@ -52,7 +53,6 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree):
             nodeXSpacing = []
             for i in range(0, len(prevSpacing), 2):
                 nodeXSpacing.append((prevSpacing[i] + prevSpacing[i + 1]) / 2)
-        prevSpacing = nodeXSpacing
         for i in range(len(nodes)):
             if nodes[i] is None:
                 continue
@@ -91,6 +91,37 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree):
                         "fill": "black",
                         "text-anchor": "middle"
                     }, [nodes[i]]))
+            if level != tree.height:
+                if tree.hasLeftChild(level, i + 1):
+                    leftChildXPos = lowestCenterX + prevSpacing[i * 2]
+                    svgBase.addChild(
+                        SVGElement(
+                            "line", {
+                                "x1": nodeCenterX,
+                                "y1": rowCenterY,
+                                "x2": leftChildXPos,
+                                "y2": prevYCenter,
+                                "stroke": "black",
+                                "stroke-width": NODE_OUTLINE_WIDTH
+                            }))
+                if tree.hasRightChild(level, i + 1):
+                    rightChildXPos = lowestCenterX + prevSpacing[i * 2 + 1]
+                    svgBase.addChild(
+                        SVGElement(
+                            "line", {
+                                "x1": nodeCenterX,
+                                "y1": rowCenterY,
+                                "x2": rightChildXPos,
+                                "y2": prevYCenter,
+                                "stroke": "black",
+                                "stroke-width": NODE_OUTLINE_WIDTH
+                            }))
+
+        prevYCenter = rowCenterY
+        prevSpacing = nodeXSpacing
+    # sort the SVGElements so that the lines are first and thus are covered up by the shapes and things
+    svgBase.children = [x for x in svgBase.children if x.tagName == "line"
+                       ] + [x for x in svgBase.children if x.tagName != "line"]
     return svgBase
 
 
