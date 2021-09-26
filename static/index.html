@@ -66,22 +66,21 @@
       >
     </div>
     <script>
-      document.querySelector("#svgDownload").disabled = true;
-      document.querySelector("#pngDownload").disabled = true;
+      const sel = (query) => document.querySelector(query);
+      const selAll = (query) => Array.from(document.querySelectorAll(query));
+      sel("#svgDownload").disabled = true;
+      sel("#pngDownload").disabled = true;
       let lastRequest;
-      document
-        .querySelector("#elements")
-        .addEventListener("keypress", (event) => {
-          if (event.key == "Enter") {
-            document.querySelector("#getTree").click();
-          }
-        });
-      document.querySelector("#getTree").addEventListener("click", () => {
-        const elements = document
-          .querySelector("#elements")
+      sel("#elements").addEventListener("keypress", (event) => {
+        if (event.key == "Enter") {
+          sel("#getTree").click();
+        }
+      });
+      sel("#getTree").addEventListener("click", () => {
+        const elements = sel("#elements")
           .value.split(",")
           .map((v) => v.trim());
-        const squares = document.querySelector("#squares").checked;
+        const squares = sel("#squares").checked;
         const request = {
           method: "POST",
           body: JSON.stringify({ elements, squares }),
@@ -89,10 +88,10 @@
         lastRequest = request;
         fetch("/svg", request).then((r) =>
           r.json().then((j) => {
-            document.querySelector("#svgCont").src = j.url;
-            document.querySelector("#svgCont").width = j.width;
-            document.querySelector("#svgDownload").disabled = false;
-            document.querySelector("#pngDownload").disabled = false;
+            sel("#svgCont").src = j.url;
+            sel("#svgCont").width = j.width;
+            sel("#svgDownload").disabled = false;
+            sel("#pngDownload").disabled = false;
           })
         );
       });
@@ -102,14 +101,14 @@
         link.href = url;
         link.click();
       }
-      document.querySelector("#svgDownload").addEventListener("click", () => {
-        const svg = document.querySelector("#svgCont").src;
+      sel("#svgDownload").addEventListener("click", () => {
+        const svg = sel("#svgCont").src;
         if (!svg) {
           return;
         }
         download(svg, "svg");
       });
-      document.querySelector("#pngDownload").addEventListener("click", () => {
+      sel("#pngDownload").addEventListener("click", () => {
         fetch("/png", lastRequest).then((r) =>
           r.blob().then((b) => {
             download(URL.createObjectURL(b), "png");
