@@ -4,7 +4,7 @@ from svg import SVGElement
 NODE_RADIUS = 20
 NODE_DIAMETER = NODE_RADIUS * 2
 MIN_NODE_X_SPACING = 15
-NODE_TEXT_SIZE = 10
+NODE_TEXT_SIZE = 20
 NODE_Y_SPACING = 8
 NODE_OUTLINE_WIDTH = 3
 # these need only affect the viewbox:
@@ -103,7 +103,8 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
                             "y": rowCenterY,
                             "font-size": NODE_TEXT_SIZE,
                             "fill": "black",
-                            "text-anchor": "middle"
+                            "text-anchor": "middle",
+                            "dominant-baseline": "middle"
                         }, [nodes[i]]))
             if level != numLevels and tree.nodeExists(level, i + 1):
                 if tree.hasLeftChild(level, i + 1) or addBlankExternalNodes:
