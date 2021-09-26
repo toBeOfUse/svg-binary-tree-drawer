@@ -127,15 +127,13 @@
           })
         );
       });
-      sel("#pngNewTab").addEventListener("click", () => {
-        fetch("/png", {
+      sel("#pngNewTab").addEventListener("click", async () => {
+        const response = await fetch("/png", {
           method: lastRequest.method,
           body: JSON.stringify({ ...JSON.parse(lastRequest.body), bg: true }), // sigh
-        }).then((r) =>
-          r.blob().then((b) => {
-            window.open(URL.createObjectURL(b), "_blank").focus();
-          })
-        );
+        });
+        const blob = await response.blob();
+        window.open(URL.createObjectURL(blob), "_blank").focus();
       });
     </script>
   </body>
