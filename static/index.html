@@ -55,6 +55,8 @@
       <button disabled id="pngDownload">Download as .png</button>
     </div>
     <script>
+      document.querySelector("#svgDownload").disabled = true;
+      document.querySelector("#pngDownload").disabled = true;
       let lastRequest;
       document
         .querySelector("#elements")
