@@ -23,6 +23,10 @@
       #elementInput * {
         display: block;
       }
+      #buttonsCont * {
+        display: inline;
+        margin-right: 5px;
+      }
       #getTree {
         margin: 10px 0;
       }
@@ -46,19 +50,48 @@
     <button id="getTree">Get Tree</button>
     <br />
     <img id="svgCont" src="" />
+    <div id="buttonsCont">
+      <button disabled id="svgDownload">Download as .svg</button>
+      <button disabled id="pngDownload">Download as .png</button>
+    </div>
     <script>
+      let lastRequest;
       document.querySelector("#getTree").addEventListener("click", () => {
         const elements = document
           .querySelector("#elements")
           .value.split(",")
           .map((v) => v.trim());
         const squares = document.querySelector("#squares").checked;
-        fetch("/svg", {
+        const request = {
           method: "POST",
           body: JSON.stringify({ elements, squares }),
-        }).then((r) =>
+        };
+        lastRequest = request;
+        fetch("/svg", request).then((r) =>
           r.text().then((t) => {
             document.querySelector("#svgCont").src = t;
+            document.querySelector("#svgDownload").disabled = false;
+            document.querySelector("#pngDownload").disabled = false;
+          })
+        );
+      });
+      function download(url, extension) {
+        const link = document.createElement("a");
+        link.download = "tree." + extension;
+        link.href = url;
+        link.click();
+      }
+      document.querySelector("#svgDownload").addEventListener("click", () => {
+        const svg = document.querySelector("#svgCont").src;
+        if (!svg) {
+          return;
+        }
+        download(svg, "svg");
+      });
+      document.querySelector("#pngDownload").addEventListener("click", () => {
+        fetch("/png", lastRequest).then((r) =>
+          r.blob().then((b) => {
+            download(URL.createObjectURL(b), "png");
           })
         );
       });
