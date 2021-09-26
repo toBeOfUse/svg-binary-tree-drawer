@@ -36,7 +36,7 @@ class PNGHandler(tornado.web.RequestHandler):
         else:
             treeData = json.loads(self.request.body)
             svg = treeDataToSVG(treeData)
-            png = svg2png(bytestring=svg, dpi=300)
+            png = svg2png(bytestring=svg, output_width=800)
             self.set_header("Content-Type", "image/png")
             self.finish(png)
 
