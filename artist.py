@@ -104,7 +104,8 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
                             "font-size": NODE_TEXT_SIZE,
                             "fill": "black",
                             "text-anchor": "middle",
-                            "dominant-baseline": "middle"
+                            "dominant-baseline": "middle",
+                            "font-family": "sans-serif"
                         }, [nodes[i]]))
             if level != numLevels and tree.nodeExists(level, i + 1):
                 if tree.hasLeftChild(level, i + 1) or addBlankExternalNodes:
