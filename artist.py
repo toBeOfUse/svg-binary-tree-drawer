@@ -13,7 +13,8 @@ HORIZONTAL_MARGIN = 10
 
 
 def visualizeBinaryTree(tree: ListBasedBinaryTree,
-                        addBlankExternalNodes: bool = False):
+                        addBlankExternalNodes: bool = False,
+                        addWhiteBG: bool = False):
     """Produces an SVG that visualizes the tree. For simplicity, the root node is
     placed at the origin of the SVG's coordinate system and the viewBox is built
     around that. If addBlankExternalNodes is True, then no existing nodes will be
@@ -136,9 +137,18 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
 
         prevYCenter = rowCenterY
         prevSpacing = nodeXSpacing
-    # sort the SVGElements so that the lines are first and thus are covered up by the shapes and things
-    svgBase.children = [x for x in svgBase.children if x.tagName == "line"
-                        ] + [x for x in svgBase.children if x.tagName != "line"]
+    viewBoxComps = svgBase.attrs["viewBox"].split()
+    bg = [
+        SVGElement(
+            "rect",
+            {"fill": "white", "x": viewBoxComps[0],
+             "y": viewBoxComps[1],
+             "width": viewBoxComps[2],
+             "height": viewBoxComps[3]})] if addWhiteBG else[]
+    # sort the SVGElements so that the lines are first and thus are covered up by the
+    # shapes and things. also the background is even before them
+    svgBase.children = bg + [x for x in svgBase.children if x.tagName == "line"
+                             ] + [x for x in svgBase.children if x.tagName != "line"]
     return svgBase
 
 
