@@ -1,4 +1,6 @@
 import json
+from typing import Union
+from svg import SVGElement
 import tornado.ioloop
 import tornado.web
 from urllib import parse
@@ -8,41 +10,50 @@ from artist import visualizeBinaryTree
 from tree import ListBasedBinaryTree
 
 
-def treeDataToSVG(treeData: dict):
-    elements = [(x.strip()[:10] if x.strip() != "" else None)
-                for x in treeData["elements"]]
-    svgResult = visualizeBinaryTree(ListBasedBinaryTree(elements),
-                                    treeData["squares"])
-    return svgResult
-
-
-class SVGHandler(tornado.web.RequestHandler):
-
-    def post(self):
+class ElementsHandler(tornado.web.RequestHandler):
+    def requestToSVG(self) -> Union[SVGElement, None]:
         if len(self.request.body) > 500:
             self.set_status(400, "request too long")
             self.finish()
-            logging.info("denied request for being "+str(len(self.request.body)+" bytes long"))
-        else:
+            logging.debug("denied request for being "+str(len(self.request.body))+" bytes long")
+            return None
+        try:
             treeData = json.loads(self.request.body)
-            logging.info("got svg request:")
-            logging.info(str(treeData))
-            svg = treeDataToSVG(treeData)
+        except:
+            self.set_status(400, "invalid JSON")
+            self.finish()
+            logging.debug("denied request for being invalid JSON")
+            return None
+        if "elements" not in treeData or type(
+                treeData["elements"]) is not list or "squares" not in treeData or type(
+                treeData["squares"]) is not bool:
+            self.set_status(400, "malformed request")
+            self.finish()
+            logging.debug("denied request for having malformed input: "+str(treeData))
+            return None
+        elements = [(x.strip()[:10] if x.strip() != "" else None)
+                    for x in treeData["elements"]]
+        svgResult = visualizeBinaryTree(ListBasedBinaryTree(elements),
+                                        treeData["squares"])
+        logging.info("processed request for tree: "+str(treeData))
+        return svgResult
+
+
+class SVGHandler(ElementsHandler):
+
+    def post(self):
+        svg = super().requestToSVG()
+        if svg is not None:
             dataURL = "data:image/svg+xml," + parse.quote(svg.render())
+            self.set_header("Content-Type", "application/json")
             self.finish({"width": svg.viewBoxWidth, "url": dataURL})
 
 
-class PNGHandler(tornado.web.RequestHandler):
+class PNGHandler(ElementsHandler):
 
     def post(self):
-        if len(self.request.body) > 500:
-            self.set_status(400)
-            self.finish("request too long")
-            logging.info("denied request for being "+str(len(self.request.body)+" bytes long"))
-        else:
-            logging.info("rendering png")
-            treeData = json.loads(self.request.body)
-            svg = treeDataToSVG(treeData)
+        svg = super().requestToSVG()
+        if svg is not None:
             png = svg2png(bytestring=svg.render(), output_width=svg.viewBoxWidth*2)
             self.set_header("Content-Type", "image/png")
             self.finish(png)
