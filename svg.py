@@ -3,7 +3,10 @@ from typing import Union
 
 class SVGElement:
 
-    def __init__(self, tagName: str, attrs: dict = {}, children: list = []):
+    def __init__(self,
+                 tagName: str,
+                 attrs: dict[str, str] = {},
+                 children: list = []):
         """Sets up the basic ingredients of an SVG element."""
         self.tagName = tagName
         self.attrs = attrs
@@ -37,6 +40,30 @@ class SVGElement:
             self.children.append(child)
         else:
             self.children.append(str(child))
+
+    @property
+    def viewBoxWidth(self):
+        if "viewBox" not in self.attrs:
+            return None
+        else:
+            try:
+                result = int(self.attrs["viewBox"].split()[2])
+                return result
+            except:
+                print("malformed viewbox, attempt to get SVG width failed")
+                return None
+
+    @property
+    def viewBoxHeight(self):
+        if "viewBox" not in self.attrs:
+            return None
+        else:
+            try:
+                result = int(self.attrs["viewBox"].split()[3])
+                return result
+            except:
+                print("malformed viewbox, attempt to get SVG height failed")
+                return None
 
     def render(self, depth=0) -> str:
         tabBase = "    "
