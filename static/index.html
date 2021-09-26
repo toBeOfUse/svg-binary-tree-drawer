@@ -64,7 +64,7 @@
       <button disabled class="outputButton" id="pngDownload">
         Download as .png
       </button>
-      <button disabled class="outputButton" id="pngNewTab">
+      <button disabled class="outputButton" id="pngCopy">
         Open .png in new tab for copying
       </button>
     </div>
@@ -78,9 +78,17 @@
     <script>
       const sel = (query) => document.querySelector(query);
       const selAll = (query) => Array.from(document.querySelectorAll(query));
+
+      let clipboardAccess = false;
+      if ("ClipboardItem" in window && "write" in navigator.clipboard) {
+        clipboardAccess = true;
+        sel("#pngCopy").innerHTML = "Copy .png to clipboard";
+      }
+
       selAll(".outputButton").forEach((v) => {
         v.disabled = true;
       });
+
       let lastRequest;
       sel("#elements").addEventListener("keypress", (event) => {
         if (event.key == "Enter") {
@@ -127,13 +135,17 @@
           })
         );
       });
-      sel("#pngNewTab").addEventListener("click", async () => {
+      sel("#pngCopy").addEventListener("click", async () => {
         const response = await fetch("/png", {
           method: lastRequest.method,
           body: JSON.stringify({ ...JSON.parse(lastRequest.body), bg: true }), // sigh
         });
         const blob = await response.blob();
-        window.open(URL.createObjectURL(blob), "_blank").focus();
+        if (!clipboardAccess) {
+          window.open(URL.createObjectURL(blob), "_blank").focus();
+        } else {
+          navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        }
       });
     </script>
   </body>
