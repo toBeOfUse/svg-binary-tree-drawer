@@ -51,7 +51,8 @@ if __name__ == "__main__":
                                             tornado.web.StaticFileHandler, {
                                                 "path": "./static/",
                                                 "default_filename": "index.html"
-                                            })])
+                                            })], 
+                                            compress_response=True)
     application.listen(8888)
     print("listening on port 8888")
     tornado.ioloop.IOLoop.current().start()
