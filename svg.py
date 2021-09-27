@@ -83,7 +83,9 @@ if __name__ == "__main__":
     print(test.render())
     testCont = SVGElement.getDefaultContainer()
     testCont.addChild(test)
-    testText = SVGElement("text", {"x": 0, "y": 70}, ["test text"])
+    testText = SVGElement(
+        "text", {"x": 0, "y": 70, "font-family": "sans-serif, LiberationSans"},
+        ["test text"])
     testCont.addChild(testText)
     print("circle with text in container:")
     print(testCont.render())

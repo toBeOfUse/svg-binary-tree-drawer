@@ -126,7 +126,7 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
                             "fill": "black",
                             "text-anchor": "middle",
                             "dominant-baseline": "middle",
-                            "font-family": "sans-serif"
+                            "font-family": "LiberationSans"
                         }, [nodes[i]]))
             if level != numLevels:
                 if leftChildWasDrawn:
