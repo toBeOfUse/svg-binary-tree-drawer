@@ -85,7 +85,7 @@ if __name__ == "__main__":
     testCont.addChild(test)
     testText = SVGElement("text", {"x": 0, "y": 70}, ["test text"])
     testCont.addChild(testText)
-    print("circle in container:")
+    print("circle with text in container:")
     print(testCont.render())
     with open("test.svg", "w+", encoding="utf-8") as testFile:
         testFile.write(testCont.render())

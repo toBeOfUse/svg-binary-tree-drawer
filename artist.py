@@ -144,7 +144,7 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
             {"fill": "white", "x": viewBoxComps[0],
              "y": viewBoxComps[1],
              "width": viewBoxComps[2],
-             "height": viewBoxComps[3]})] if addWhiteBG else[]
+             "height": viewBoxComps[3]})] if addWhiteBG else []
     # sort the SVGElements so that the lines are first and thus are covered up by the
     # shapes and things. also the background is even before them
     svgBase.children = bg + [x for x in svgBase.children if x.tagName == "line"
