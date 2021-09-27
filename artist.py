@@ -37,8 +37,13 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
                f"{finalHeight + VERTICAL_MARGIN*2}")
     svgBase = SVGElement.getDefaultContainer(viewBox)
 
+    # as we iterate over the horizontal rows of nodes, we store some data about the
+    # previous row to help us out
     prevSpacing = None
     prevYCenter = None
+    # this stores an array of boolean values describing whether each node from the
+    # previous row was drawn or not. obviously, we initialize it to all False
+    prevDrawnNodes = [False] * tree.getMaxNodeCountByLevel(numLevels+1)
     # we build the tree from the bottom up so that we can space the bottom row of
     # nodes the minimum distance apart and then space each node in each row above it
     # halfway between their two child nodes.
@@ -60,17 +65,31 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
             nodeXSpacing = []
             for i in range(0, len(prevSpacing), 2):
                 nodeXSpacing.append((prevSpacing[i] + prevSpacing[i + 1]) / 2)
+        currentDrawnNodes = []
         for i in range(len(nodes)):
+            leftChildWasDrawn = prevDrawnNodes[i*2]
+            rightChildWasDrawn = prevDrawnNodes[i*2+1]
+            # this might be different from Actually being external if we drew
+            # placeholder blank children for this node
+            effectivelyExternal = not (leftChildWasDrawn or rightChildWasDrawn)
             if nodes[i] is None:
-                if not addBlankExternalNodes or not tree.hasParent(
-                        level, i + 1):
-                    continue
-
-            nodeIsExternal = tree.isNodeExternal(level, i + 1)
-            if addBlankExternalNodes:
-                squareMode = nodes[i] is None
-            else:
-                squareMode = nodeIsExternal
+                # we still draw blank nodes if we're adding blank external node
+                # children or we need to add ghostly representations of parents that
+                # "should" exist
+                if effectivelyExternal:
+                    # ^ if a node does have children, we should draw it
+                    if not addBlankExternalNodes or (not tree.hasParent(level, i+1)):
+                        # ^ if we're not drawing blank external nodes, or if the
+                        # current node has no "real" node parents to draw blank
+                        # children for, we skip this one
+                        currentDrawnNodes.append(False)
+                        continue
+            currentDrawnNodes.append(True)
+            squareMode = effectivelyExternal
+            # blank nodes that Should exist because they have children will be
+            # represented as dashed-line ghosts
+            dashMode = {
+                "stroke-dasharray": "4"} if (nodes[i] is None and not effectivelyExternal) else {}
             nodeCenterX = lowestCenterX + nodeXSpacing[i]
             # note that the tree class assumes that node numbers start at 1, whereas
             # in this loop we are coding with them starting at 0, so we have to add 1
@@ -84,7 +103,7 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
                             "fill": "white",
                             "stroke": "black",
                             "stroke-width": NODE_OUTLINE_WIDTH
-                        }))
+                        } | dashMode))
             else:
                 svgBase.addChild(
                     SVGElement(
@@ -96,7 +115,7 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
                             "fill": "white",
                             "stroke": "black",
                             "stroke-width": NODE_OUTLINE_WIDTH
-                        }))
+                        } | dashMode))
             if nodes[i] is not None:
                 svgBase.addChild(
                     SVGElement(
@@ -109,8 +128,8 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
                             "dominant-baseline": "middle",
                             "font-family": "sans-serif"
                         }, [nodes[i]]))
-            if level != numLevels and tree.nodeExists(level, i + 1):
-                if tree.hasLeftChild(level, i + 1) or addBlankExternalNodes:
+            if level != numLevels:
+                if leftChildWasDrawn:
                     leftChildXPos = lowestCenterX + prevSpacing[i * 2]
                     svgBase.addChild(
                         SVGElement(
@@ -121,8 +140,8 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
                                 "y2": prevYCenter,
                                 "stroke": "black",
                                 "stroke-width": NODE_OUTLINE_WIDTH
-                            }))
-                if tree.hasRightChild(level, i + 1) or addBlankExternalNodes:
+                            } | dashMode))
+                if rightChildWasDrawn:
                     rightChildXPos = lowestCenterX + prevSpacing[i * 2 + 1]
                     svgBase.addChild(
                         SVGElement(
@@ -133,10 +152,11 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
                                 "y2": prevYCenter,
                                 "stroke": "black",
                                 "stroke-width": NODE_OUTLINE_WIDTH
-                            }))
+                            } | dashMode))
 
         prevYCenter = rowCenterY
         prevSpacing = nodeXSpacing
+        prevDrawnNodes = currentDrawnNodes
     viewBoxComps = svgBase.attrs["viewBox"].split()
     bg = [
         SVGElement(
