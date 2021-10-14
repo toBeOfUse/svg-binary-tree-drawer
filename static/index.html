@@ -27,6 +27,10 @@
       }
       #elementInput * {
         display: block;
+        margin: 8px 0;
+      }
+      #checkboxes * {
+        display: inline;
       }
       #buttonsCont * {
         display: inline;
@@ -47,14 +51,22 @@
         >Comma-separated element labels in array-representation format:</label
       >
       <input type="text" id="elements" />
+      <div id="checkboxes">
+        <input type="checkbox" id="squares" checked />
+        <label for="squares">Add placeholder external nodes</label>
+        <input type="checkbox" id="squaresBlack" checked />
+        <label for="squaresBlack"
+          >Color them black as in a red-black tree</label
+        >
+      </div>
       <span
         >(leave a blank space or nothing between the commas for non-existent
         nodes)</span
+      ><span
+        >(prefix the node text with $red or $black to color a node red or
+        black)</span
       >
     </div>
-    <input type="checkbox" id="squares" checked />
-    <label for="squares">Add placeholder external nodes</label>
-    <br />
     <button id="getTree">Get Tree</button>
     <br />
     <img id="svgCont" src="" />
@@ -108,7 +120,8 @@
           .value.split(",")
           .map((v) => v.trim());
         const squares = sel("#squares").checked;
-        currentRequestBody = { elements, squares, bg: false };
+        const squaresBlack = sel("#squaresBlack").checked;
+        currentRequestBody = { elements, squares, squaresBlack, bg: false };
         fetch("/svg", makeRequest(currentRequestBody)).then((r) =>
           r.json().then((j) => {
             sel("#svgCont").src = j.url;

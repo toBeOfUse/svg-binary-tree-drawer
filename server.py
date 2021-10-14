@@ -34,8 +34,11 @@ class ElementsHandler(tornado.web.RequestHandler):
             return None
         elements = [(x.strip()[:10] if x.strip() != "" else None)
                     for x in treeData["elements"]]
-        svgResult = visualizeBinaryTree(ListBasedBinaryTree(elements),
-                                        treeData["squares"], treeData["bg"])
+        svgResult = visualizeBinaryTree(
+            ListBasedBinaryTree(elements),
+            treeData["squares"],
+            treeData["squaresBlack"],
+            treeData["bg"])
         logging.info("processed request for tree: "+str(treeData))
         return svgResult
 

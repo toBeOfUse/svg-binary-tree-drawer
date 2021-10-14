@@ -14,6 +14,7 @@ HORIZONTAL_MARGIN = 10
 
 def visualizeBinaryTree(tree: ListBasedBinaryTree,
                         addBlankExternalNodes: bool = False,
+                        makeBlankExternalNodesBlack: bool = True,
                         addWhiteBG: bool = False):
     """Produces an SVG that visualizes the tree. For simplicity, the root node is
     placed at the origin of the SVG's coordinate system and the viewBox is built
@@ -93,6 +94,17 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
             nodeCenterX = lowestCenterX + nodeXSpacing[i]
             # note that the tree class assumes that node numbers start at 1, whereas
             # in this loop we are coding with them starting at 0, so we have to add 1
+            if nodes[i] is not None and nodes[i].startswith("$red"):
+                shape_fill = "red"
+                text_fill = "black"
+                nodes[i] = nodes[i].replace("$red", "").strip()
+            elif nodes[i] is not None and nodes[i].startswith("$black"):
+                shape_fill = "black"
+                text_fill = "white"
+                nodes[i] = nodes[i].replace("$black", "").strip()
+            else:
+                shape_fill = "white"
+                text_fill = "black"
             if not squareMode:
                 svgBase.addChild(
                     SVGElement(
@@ -100,7 +112,7 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
                             "cx": nodeCenterX,
                             "cy": rowCenterY,
                             "r": NODE_RADIUS,
-                            "fill": "white",
+                            "fill": shape_fill,
                             "stroke": "black",
                             "stroke-width": NODE_OUTLINE_WIDTH
                         } | dashMode))
@@ -112,7 +124,9 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
                             "height": NODE_DIAMETER,
                             "x": nodeCenterX - NODE_RADIUS,
                             "y": rowCenterY - NODE_RADIUS,
-                            "fill": "white",
+                            "fill": ("black"
+                                     if (nodes[i] is None and makeBlankExternalNodesBlack)
+                                     else shape_fill),
                             "stroke": "black",
                             "stroke-width": NODE_OUTLINE_WIDTH
                         } | dashMode))
@@ -123,7 +137,7 @@ def visualizeBinaryTree(tree: ListBasedBinaryTree,
                             "x": nodeCenterX,
                             "y": rowCenterY,
                             "font-size": NODE_TEXT_SIZE,
-                            "fill": "black",
+                            "fill": text_fill,
                             "text-anchor": "middle",
                             "dominant-baseline": "middle",
                             "font-family": "LiberationSans, sans-serif"
